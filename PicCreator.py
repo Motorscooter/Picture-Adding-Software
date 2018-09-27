@@ -18,10 +18,17 @@ class PictureApp(QtWidgets.QMainWindow, Mainwindow.Ui_MainWindow):
         self.setupUi(self)
         self.pathBtn.clicked.connect(self.savePictures)
         self.testNumber.textChanged.connect(self.checker)
-    
+        perclist = list(range(10,100,10))
+        for i in range(0,len(perclist)):
+            perclist[i] = str(perclist[i]) + "%"
+        self.comboBox.addItems(perclist)
+        
     def savePictures(self): 
         directory = []
         picList = []
+        quality = self.comboBox.currentText()
+        quality = quality.replace('%',"")
+        quality = int(quality)
         directory = QtWidgets.QFileDialog.getExistingDirectory(self,"File Directory for Saving")
         title = self.buildsheet.text()
         workbook = Workbook(directory + "/" + title+".xlsx")
@@ -39,38 +46,74 @@ class PictureApp(QtWidgets.QMainWindow, Mainwindow.Ui_MainWindow):
             picList.append(pictures[0])
             # 10 in Arial excel measurments is 75px so 20 should be 150px
             worksheet.set_column(1,numTests,21)
-            
-        col = 1
-        for i in picList:
-            row = 1
-            worksheet.write(row,col,col,variable_format)
-            row += 1
-            yoff = 0
-            pic_count = 1
-            for j in i:
-                img = Image.open(j)
-                filepath, filename = os.path.split(j)
-                imgwidth, imgheight = img.size
-                scalwidth = imgwidth - (imgwidth - (0.20*imgwidth))
-                scalheight = imgheight - (imgheight - (0.20*imgheight))                
-                img = img.resize((int(scalwidth),int(scalheight)),Image.ANTIALIAS)
-                scaledname = self.buildsheet.text() +'_'+ str(col) + str(pic_count)
-                filepath = filepath+'\\'+scaledname+'_scaled' + '.jpg'
-                img.save(filepath,quality= 75)
-                img = Image.open(filepath)
-                imgwidth, imgheight = img.size
-                if imgwidth > 150:                    
-                    xscale = 150/imgwidth
-                    yscale = xscale
-                else:
-                    xscale = 1
-                    yscale = 1
-                worksheet.insert_image(2,col,filepath,{'x_scale':xscale,'y_scale':yscale, 'y_offset':yoff})
-                yoff += imgheight * yscale + 1
-                pic_count += 1
-            col += 1
-        workbook.close()
-                                                               
+        complete = int(100/numTests)
+        
+        if self.compressBox.isChecked:            
+            col = 1
+            for i in picList:
+                row = 1
+                worksheet.write(row,col,col,variable_format)
+                row += 1
+                yoff = 0
+                pic_count = 1
+                for j in i:
+                    img = Image.open(j)
+                    filepath, filename = os.path.split(j)
+                    imgwidth, imgheight = img.size
+                    scalwidth = imgwidth - (imgwidth - (0.20*imgwidth))
+                    scalheight = imgheight - (imgheight - (0.20*imgheight))                
+                    img = img.resize((int(scalwidth),int(scalheight)),Image.ANTIALIAS)
+                    scaledname = self.buildsheet.text() +'_'+ str(col) + str(pic_count)
+                    filepath = filepath+'\\'+scaledname+'_scaled' + '.jpg'
+                    img.save(filepath,quality= quality)
+                    img = Image.open(filepath)
+                    imgwidth, imgheight = img.size
+                    if imgwidth > 150:                    
+                        xscale = 150/imgwidth
+                        yscale = xscale
+                    else:
+                        xscale = 1
+                        yscale = 1
+                    worksheet.insert_image(2,col,filepath,{'x_scale':xscale,'y_scale':yscale, 'y_offset':yoff})
+                    yoff += imgheight * yscale + 1
+                    pic_count += 1
+                col += 1
+                self.progressBar.setValue(complete)
+                complete += complete
+                if complete > 100:
+                    complete = 100
+        else:
+            col = 1
+            for i in picList:
+                row = 1
+                worksheet.write(row,col,col,variable_format)
+                row += 1
+                yoff = 0
+                pic_count = 1
+                for j in i:
+                    img = Image.open(j)
+                    filepath, filename = os.path.split(j)
+                    imgwidth, imgheight = img.size
+                    img.save(filepath,quality= 99)
+                    img = Image.open(j)
+                    imgwidth, imgheight = img.size
+                    if imgwidth > 150:                    
+                        xscale = 150/imgwidth
+                        yscale = xscale
+                    else:
+                        xscale = 1
+                        yscale = 1
+                    worksheet.insert_image(2,col,filepath,{'x_scale':xscale,'y_scale':yscale, 'y_offset':yoff})
+                    yoff += imgheight * yscale + 1
+                    pic_count += 1
+                col += 1
+                self.progressBar.setValue(complete)
+                complete += complete
+                if complete > 100:
+                    complete = 100
+        workbook.close()            
+        if complete != 100:
+            complete = complete + (100 - (complete))
     def checker(self):
         value = self.testNumber.text()
         try:
