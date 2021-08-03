@@ -61,14 +61,14 @@ class PictureApp(QtWidgets.QDialog, Mainwindow.Ui_Dialog):
             if listSize > maxlistSize:
                 maxlistSize = listSize
         worksheet.merge_range(0,0,0,maxlistSize+1,title,variable_format)
-        worksheet.set_column(1,maxlistSize+1,21)
+        worksheet.set_column_pixels(1,maxlistSize+1,175)
         row = 1
         scaled_filepath = []
         pic_count = 0
         for i in picList:
             col = 1
             worksheet.write(row,0,row,variable_format)
-            worksheet.set_row(row,94)
+            worksheet.set_row_pixels(row,175)
             col += 1
             xoff = 0
             colcount = 1
@@ -76,12 +76,12 @@ class PictureApp(QtWidgets.QDialog, Mainwindow.Ui_Dialog):
                 img = Image.open(j)
                 filepath, filename = os.path.split(j)
                 imgwidth, imgheight = img.size
-                scalwidth = imgwidth - (imgwidth - (0.20*imgwidth))
-                scalheight = imgheight - (imgheight - (0.20*imgheight))
+                scalwidth = imgwidth * (quality/100)
+                scalheight = imgheight * (quality/100)
                 img = img.resize((int(scalwidth),int(scalheight)),Image.ANTIALIAS)
                 scaledname = self.buildsheet.text() +'_' + str(pic_count)
-                filepath = filepath+'\\'+scaledname+'_scaled' + '.jpg'
-                img.save(filepath,quality= quality)
+                filepath = filepath+'\\'+scaledname+'_scaled' + '.png'
+                img.save(filepath,optimize = True)
                 img = Image.open(filepath)
                 imgwidth, imgheight = img.size
                 if imgwidth > 150:
@@ -121,7 +121,7 @@ class PictureApp(QtWidgets.QDialog, Mainwindow.Ui_Dialog):
             pictures = QtWidgets.QFileDialog.getOpenFileNames(self, ("Select Pictures for # %d" % i))
             picList.append(pictures[0])
             # 10 in Arial excel measurments is 75px so 20 should be 150px
-            worksheet.set_column(1, numTests, 21)
+            worksheet.set_column_pixels(1, numTests, 175)
         worksheet.merge_range(0, 0, 0, numTests, title, variable_format)
         col = 1
         scaled_filepath = []
@@ -129,17 +129,16 @@ class PictureApp(QtWidgets.QDialog, Mainwindow.Ui_Dialog):
         for i in picList:
             row = 1
             worksheet.write(row, col, col, variable_format)
-
             row += 1
             for j in i:
                 img = Image.open(j)
                 filepath, filename = os.path.split(j)
                 imgwidth, imgheight = img.size
-                scalwidth = imgwidth - (imgwidth - (0.20 * imgwidth))
-                scalheight = imgheight - (imgheight - (0.20 * imgheight))
+                scalwidth = imgwidth 
+                scalheight = imgheight 
                 img = img.resize((int(scalwidth), int(scalheight)), Image.ANTIALIAS)
                 scaledname = self.buildsheet.text() + '_' + str(pic_count)
-                filepath = filepath + '\\' + scaledname + '_scaled' + '.jpg'
+                filepath = filepath + '\\' + scaledname + '_scaled' + '.png'
                 img.save(filepath, quality = quality)
                 img = Image.open(filepath)
                 imgwidth, imgheight = img.size
@@ -149,7 +148,7 @@ class PictureApp(QtWidgets.QDialog, Mainwindow.Ui_Dialog):
                 else:
                     xscale = 1
                     yscale = 1
-                worksheet.set_row(row,94)
+                worksheet.set_row_pixels(row,175)
                 worksheet.insert_image(row, col, filepath, {'x_scale': xscale, 'y_scale': yscale})
                 scaled_filepath.append(filepath)
                 pic_count += 1
